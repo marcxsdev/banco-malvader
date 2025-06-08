@@ -17,12 +17,6 @@ export default function Home() {
         </div>
 
         <div className="flex flex-row gap-4">
-          <Link href="">
-            <button className="flex flex-row items-center justify-center gap-2 py-2.5 px-4 max-h-[45px] cursor-pointer hover:scale-110 transition duration-300">
-              <span className="font-bold">Cadastrar</span> <FaArrowRight />
-            </button>
-          </Link>
-
           <Link href="/pages/login">
             <button className="bg-black flex flex-row items-center justify-center gap-4 py-2.5 px-4 max-h-[45px] rounded-xl cursor-pointer hover:bg-neutral-800 hover:scale-105 transition duration-300">
               <span className="text-white font-bold">Acesse sua conta</span>{" "}
@@ -43,7 +37,7 @@ export default function Home() {
             </p>
             <Link href="">
               <button className="flex flex-row items-center justify-center gap-4 py-2.5 px-4 max-h-[45px] cursor-pointer hover:scale-110 transition duration-300">
-                <span className="font-bold text-4xl">Juntar-se</span>{" "}
+                <span className="font-bold text-4xl">Entrar</span>{" "}
                 <FaArrowRight size={28} />
               </button>
             </Link>
