@@ -23,7 +23,7 @@ export default function Home() {
             </button>
           </Link>
 
-          <Link href="">
+          <Link href="/pages/login">
             <button className="bg-black flex flex-row items-center justify-center gap-4 py-2.5 px-4 max-h-[45px] rounded-xl cursor-pointer hover:bg-neutral-800 hover:scale-105 transition duration-300">
               <span className="text-white font-bold">Acesse sua conta</span>{" "}
               <FaArrowRight color="white" />
