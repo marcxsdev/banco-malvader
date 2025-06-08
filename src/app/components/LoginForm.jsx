@@ -6,7 +6,10 @@ import Link from "next/link";
 
 const LoginForm = () => {
   const [cpf, setCpf] = useState("");
-  const [selectedRole, setSelectedRole] = useState("cliente");
+  const [senha, setSenha] = useState("");
+  const [otp, setOtp] = useState("");
+  const [selectedRole, setSelectedRole] = useState("CLIENTE");
+  const [mensagem, setMensagem] = useState("");
 
   function formatCpf(value) {
     value = value.replace(/\D/g, "");
@@ -22,6 +25,31 @@ const LoginForm = () => {
     setCpf(formatted);
   }
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cpf: cpf.replace(/\D/g, ""),
+          senha,
+          otp,
+          tipoUsuario: selectedRole.toUpperCase(),
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        window.location.href =
+          selectedRole === "CLIENTE" ? "/pages/cliente" : "/pages/funcionario";
+      } else {
+        setMensagem(data.message || "Erro ao fazer login");
+      }
+    } catch (error) {
+      setMensagem("Erro ao conectar ao servidor");
+    }
+  }
+
   return (
     <div className="w-1/2 h-full flex flex-col items-center justify-center">
       <Image
@@ -35,18 +63,18 @@ const LoginForm = () => {
       <div className="w-3/4 max-w-[400px] flex">
         <button
           type="button"
-          onClick={() => setSelectedRole("cliente")}
+          onClick={() => setSelectedRole("CLIENTE")}
           className={`w-1/2 py-2 text-center transition border-b-2 cursor-pointer ${
-            selectedRole === "cliente" ? "border-black" : "border-transparent"
+            selectedRole === "CLIENTE" ? "border-black" : "border-transparent"
           }`}
         >
           Cliente
         </button>
         <button
           type="button"
-          onClick={() => setSelectedRole("funcionario")}
+          onClick={() => setSelectedRole("FUNCIONARIO")}
           className={`w-1/2 py-2 text-center transition border-b-2 cursor-pointer ${
-            selectedRole === "funcionario"
+            selectedRole === "FUNCIONARIO"
               ? "border-black"
               : "border-transparent"
           }`}
@@ -55,9 +83,12 @@ const LoginForm = () => {
         </button>
       </div>
 
-      <form className="w-3/4 max-w-[400px] flex flex-col gap-3 mt-6">
+      <form
+        onSubmit={handleSubmit}
+        className="w-3/4 max-w-[400px] flex flex-col gap-3 mt-6"
+      >
         <label className="flex flex-col gap-1">
-          <span>CPF:</span>
+          <span className="font-semibold">CPF:</span>
           <input
             type="text"
             name="cpf"
@@ -69,19 +100,23 @@ const LoginForm = () => {
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span>Senha:</span>
+          <span className="font-semibold">Senha:</span>
           <input
             type="password"
             name="password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
             placeholder="Digite sua senha..."
             className="py-1.5 px-2 outline-none rounded-lg border border-transparent focus:border-black transition duration-300"
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span>OTP:</span>
+          <span className="font-semibold">OTP:</span>
           <input
-            type="password"
+            type="text"
             name="otp"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
             placeholder="Digite o OTP fornecido..."
             className="py-1.5 px-2 outline-none rounded-lg border border-transparent focus:border-black transition duration-300"
           />
@@ -89,7 +124,7 @@ const LoginForm = () => {
 
         <input
           type="submit"
-          value={"Entrar"}
+          value="Entrar"
           className="bg-black text-white font-bold text-xl mt-3 py-3 rounded-xl hover:bg-neutral-800 transition duration-500 cursor-pointer"
         />
         <div className="flex justify-center items-center">
@@ -99,6 +134,9 @@ const LoginForm = () => {
             </button>
           </Link>
         </div>
+        {mensagem && (
+          <p className="text-red-500 text-center mt-4">{mensagem}</p>
+        )}
       </form>
     </div>
   );
