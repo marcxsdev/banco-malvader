@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import LoginForm from "../../components/LoginForm";
 
-const Login = () => {
+const Cliente = () => {
   return (
     <div className="flex h-screen w-screen">
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -12,4 +12,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Cliente;

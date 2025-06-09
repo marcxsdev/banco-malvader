@@ -35,7 +35,7 @@ export default function Home() {
             <p className="text-8xl text-black font-medium">
               Escolha <span className="font-bold">Malvader.</span>
             </p>
-            <Link href="">
+            <Link href="/pages/login">
               <button className="flex flex-row items-center justify-center gap-4 py-2.5 px-4 max-h-[45px] cursor-pointer hover:scale-110 transition duration-300">
                 <span className="font-bold text-4xl">Entrar</span>{" "}
                 <FaArrowRight size={28} />
