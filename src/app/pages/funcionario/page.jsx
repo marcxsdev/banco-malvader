@@ -3,11 +3,11 @@ import { useState } from "react";
 import HeaderFuncionario from "../../components/HeaderFuncionario";
 import AsideFuncionario from "../../components/AsideFuncionario";
 
-import AbrirConta from "../../components/aside/AbrirConta";
-import FecharConta from "../../components/aside/FecharConta";
-import ConsultarConta from "../../components/aside/ConsultarConta";
-import AlterarConta from "../../components/aside/AlterarConta";
-import Relatorios from "../../components/aside/Relatorios";
+import AbrirConta from "../../components/funcionarioViews/AbrirConta";
+import FecharConta from "../../components/funcionarioViews/FecharConta";
+import ConsultarConta from "../../components/funcionarioViews/ConsultarConta";
+import AlterarConta from "../../components/funcionarioViews/AlterarConta";
+import Relatorios from "../../components/funcionarioViews/Relatorios";
 
 const Funcionario = () => {
   const [activeTab, setActiveTab] = useState("abrir");
