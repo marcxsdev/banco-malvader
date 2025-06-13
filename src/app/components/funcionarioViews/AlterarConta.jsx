@@ -3,7 +3,7 @@ import React from "react";
 const AlterarConta = () => {
   return (
     <div>
-      <h1>Alterar Conta:</h1>
+      <h1 className="text-2xl font-bold">Alterar conta:</h1>
     </div>
   );
 };

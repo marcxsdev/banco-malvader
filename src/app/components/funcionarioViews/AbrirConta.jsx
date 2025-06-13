@@ -2,6 +2,8 @@
 import { useState } from "react";
 
 import FormularioPoupanca from "../formulariosConta/FormularioPoupanca";
+import FormularioCorrente from "../formulariosConta/FormularioCorrente";
+import FormularioInvestimento from "../formulariosConta/FormularioInvestimento";
 
 const AbrirConta = () => {
   const [tipoConta, setTipoConta] = useState("poupanca");

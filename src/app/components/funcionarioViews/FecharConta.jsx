@@ -3,7 +3,7 @@ import React from "react";
 const FecharConta = () => {
   return (
     <div>
-      <h1>Fechar conta:</h1>
+      <h1 className="text-2xl font-bold">Fechar conta:</h1>
     </div>
   );
 };

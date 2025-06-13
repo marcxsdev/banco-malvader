@@ -26,7 +26,7 @@ const FormularioPoupanca = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-3 mt-4 max-w-lg">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-4 max-w-lg">
       <input
         type="text"
         name="agencia"
@@ -63,15 +63,25 @@ const FormularioPoupanca = () => {
         className="py-1.5 px-2 border rounded-lg cursor-text max-w-lg"
         required
       />
-      <input
-        type="date"
-        name="dataNascimento"
-        placeholder="Data de Nascimento"
-        value={formData.dataNascimento}
-        onChange={handleChange}
-        className="py-1.5 px-2 border rounded-lg cursor-text max-w-lg"
-        required
-      />
+      <div className="relative">
+        <input
+          type="date"
+          id="dataNascimento"
+          name="dataNascimento"
+          value={formData.dataNascimento}
+          onChange={handleChange}
+          className="peer py-1.5 px-2 border rounded-lg w-full text-gray-900 placeholder-transparent"
+          required
+        />
+        <label
+          htmlFor="dataNascimento"
+          className={`absolute left-2 top-1.5 text-gray-500 text-sm transition-all cursor-pointer peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-sm peer-focus:top-[-0.6rem] peer-focus:text-xs bg-white px-1 ${
+            formData.dataNascimento ? "top-[-0.6rem] text-xs" : ""
+          }`}
+        >
+          Data de Nascimento
+        </label>
+      </div>
       <input
         type="tel"
         name="telefone"
