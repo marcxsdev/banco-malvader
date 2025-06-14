@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 const ConsultaConta = () => {
-  const [cpf, setCpf] = useState("");
+  const [numero, setNumero] = useState("");
   const [dados, setDados] = useState(null);
 
   const handleBuscar = (e) => {
@@ -15,8 +15,8 @@ const ConsultaConta = () => {
       <form onSubmit={handleBuscar} className="flex gap-2 mb-6 max-w-[700px]">
         <input
           type="text"
-          placeholder="Digite o CPF do cliente"
-          value={cpf}
+          placeholder="Digite o número da conta"
+          value={numero}
           onChange={(e) => setCpf(e.target.value)}
           className="flex-1 border rounded-lg py-1.5 px-2"
           required

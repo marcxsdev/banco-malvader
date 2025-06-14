@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const FecharConta = () => {
   const [formData, setFormData] = useState({
-    cpf: "",
+    numero: "",
     senha: "",
     otp: "",
     motivo: "",
@@ -26,11 +26,10 @@ const FecharConta = () => {
       <form className="flex flex-col gap-3 mt-4 max-w-lg w-full">
         <input
           type="text"
-          name="cpf"
-          value={formData.cpf}
+          name="numero"
+          value={formData.numero}
           onChange={handleChange}
-          placeholder="CPF do cliente"
-          inputMode="numeric"
+          placeholder="Número da conta"
           className="py-1.5 px-2 rounded-lg border transition duration-300 w-full"
         />
         <input

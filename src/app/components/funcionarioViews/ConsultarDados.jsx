@@ -5,12 +5,12 @@ import ConsultaConta from "../formulariosConsulta/ConsultaConta";
 import ConsultaCliente from "../formulariosConsulta/ConsultaCliente";
 import ConsultaFuncionario from "../formulariosConsulta/ConsultaFuncionario";
 
-const ConsultarConta = () => {
+const ConsultarDados = () => {
   const [selectedOption, setSelectedOption] = useState("CONTA");
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Consultar conta:</h1>
+      <h1 className="text-2xl font-bold">Consultar dados:</h1>
 
       <div className="w-3/4 max-w-[700px] flex mt-4">
         <button
@@ -52,4 +52,4 @@ const ConsultarConta = () => {
   );
 };
 
-export default ConsultarConta;
+export default ConsultarDados;
