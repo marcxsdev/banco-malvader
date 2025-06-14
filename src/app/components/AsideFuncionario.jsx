@@ -7,8 +7,8 @@ const AsideFuncionario = ({ activeTab, setActiveTab }) => {
     { label: "Abrir Conta", key: "abrir" },
     { label: "Fechar Conta", key: "fechar" },
     { label: "Consultar Conta", key: "consultar" },
-    { label: "Alterar Conta", key: "alterar" },
-    { label: "Cadastrar Funcionario", key: "funcionario" },
+    { label: "Alterar Dados", key: "alterar" },
+    { label: "Cadastrar Funcionário", key: "funcionario" },
     { label: "Relatórios", key: "relatorios" },
   ];
 

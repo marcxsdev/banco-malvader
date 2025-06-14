@@ -6,7 +6,7 @@ import AsideFuncionario from "../../components/AsideFuncionario";
 import AbrirConta from "../../components/funcionarioViews/AbrirConta";
 import FecharConta from "../../components/funcionarioViews/FecharConta";
 import ConsultarConta from "../../components/funcionarioViews/ConsultarConta";
-import AlterarConta from "../../components/funcionarioViews/AlterarConta";
+import AlterarDados from "../../components/funcionarioViews/AlterarDados";
 import CadastrarFuncionario from "../../components/funcionarioViews/CadastrarFuncionario";
 import Relatorios from "../../components/funcionarioViews/Relatorios";
 
@@ -22,7 +22,7 @@ const Funcionario = () => {
       case "consultar":
         return <ConsultarConta />;
       case "alterar":
-        return <AlterarConta />;
+        return <AlterarDados />;
       case "funcionario":
         return <CadastrarFuncionario />;
       case "relatorios":
