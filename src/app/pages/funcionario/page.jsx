@@ -7,6 +7,7 @@ import AbrirConta from "../../components/funcionarioViews/AbrirConta";
 import FecharConta from "../../components/funcionarioViews/FecharConta";
 import ConsultarConta from "../../components/funcionarioViews/ConsultarConta";
 import AlterarConta from "../../components/funcionarioViews/AlterarConta";
+import CadastrarFuncionario from "../../components/funcionarioViews/CadastrarFuncionario";
 import Relatorios from "../../components/funcionarioViews/Relatorios";
 
 const Funcionario = () => {
@@ -22,6 +23,8 @@ const Funcionario = () => {
         return <ConsultarConta />;
       case "alterar":
         return <AlterarConta />;
+      case "funcionario":
+        return <CadastrarFuncionario />;
       case "relatorios":
         return <Relatorios />;
       default:
