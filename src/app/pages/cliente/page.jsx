@@ -69,10 +69,12 @@ const Cliente = () => {
             </div>
           </div>
 
-          {formularioAtivo === "deposito" && <Deposito />}
-          {formularioAtivo === "saque" && <Saque />}
-          {formularioAtivo === "transferencia" && <Transferencia />}
-          {formularioAtivo === "limite" && <ConsultarLimite />}
+          <div className="mx-5">
+            {formularioAtivo === "deposito" && <Deposito />}
+            {formularioAtivo === "saque" && <Saque />}
+            {formularioAtivo === "transferencia" && <Transferencia />}
+            {formularioAtivo === "limite" && <ConsultarLimite />}
+          </div>
         </div>
       </div>
     </div>
