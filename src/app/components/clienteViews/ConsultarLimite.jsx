@@ -15,7 +15,7 @@ const ConsultarLimite = () => {
     <div className="mt-4">
       <button
         onClick={handleConsultar}
-        className="bg-black text-white py-2.5 px-4 rounded-xl hover:bg-neutral-800"
+        className="bg-black text-white py-2.5 px-4 rounded-xl hover:bg-neutral-800 cursor-pointer"
       >
         Consultar Limite Atual
       </button>
