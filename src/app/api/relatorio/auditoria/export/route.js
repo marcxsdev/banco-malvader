@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/util/db";
 import jwt from "jsonwebtoken";
-import { exportToExcel } from "@/lib/util/export";
+import { exportToPDF } from "@/lib/util/export";
 
 export async function GET(request) {
   try {
@@ -23,23 +23,15 @@ export async function GET(request) {
       );
     }
 
-    // Buscar auditoria
+    // Obter dados da auditoria
     const auditoria = await query(
-      "SELECT id_auditoria, id_usuario, acao, detalhes, data_hora FROM auditoria ORDER BY data_hora DESC"
+      "SELECT id_usuario, acao, detalhes, data_hora FROM auditoria ORDER BY data_hora DESC"
     );
 
-    // Formatando data_hora para string legível
-    const formattedAuditoria = auditoria.map((item) => ({
-      id_auditoria: item.id_auditoria,
-      id_usuario: item.id_usuario,
-      acao: item.acao,
-      detalhes: item.detalhes,
-      data_hora: new Date(item.data_hora).toLocaleString("pt-BR"),
-    }));
-
-    // Gerar Excel
-    const { buffer, filename } = await exportToExcel(
-      formattedAuditoria,
+    // Gerar PDF
+    const { buffer, filename } = await exportToPDF(
+      auditoria,
+      "Relatório de Auditoria - Banco Malvader",
       "relatorio_auditoria"
     );
 
@@ -49,21 +41,20 @@ export async function GET(request) {
       [
         decoded.id_usuario,
         "EXPORTAR_RELATORIO",
-        "Exportou relatório de auditoria em Excel",
+        "Exportou relatório de auditoria em PDF",
       ]
     );
 
     return new NextResponse(buffer, {
       headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=${filename}`,
       },
     });
   } catch (error) {
-    console.error("Erro ao gerar relatório:", error);
+    console.error("Erro ao exportar relatório:", error);
     return NextResponse.json(
-      { error: "Erro ao gerar relatório" },
+      { error: "Erro ao exportar relatório" },
       { status: 500 }
     );
   }
