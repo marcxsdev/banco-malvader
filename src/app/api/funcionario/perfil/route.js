@@ -21,18 +21,22 @@ export async function GET(request) {
       );
     }
 
-    const funcionario = await query(
-      "SELECT cargo FROM funcionario WHERE id_usuario = ?",
+    const [funcionario] = await query(
+      "SELECT f.cargo, u.cpf FROM funcionario f JOIN usuario u ON f.id_usuario = u.id_usuario WHERE f.id_usuario = ?",
       [decoded.id_usuario]
     );
-    if (!funcionario.length) {
+    if (!funcionario) {
       return NextResponse.json(
         { error: "Funcionário não encontrado" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, cargo: funcionario[0].cargo });
+    return NextResponse.json({
+      success: true,
+      cargo: funcionario.cargo,
+      cpf: funcionario.cpf,
+    });
   } catch (error) {
     console.error("Erro ao obter perfil:", error);
     return NextResponse.json(
