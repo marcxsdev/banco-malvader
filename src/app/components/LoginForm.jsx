@@ -25,6 +25,27 @@ const LoginForm = () => {
     setCpf(formatted);
   }
 
+  async function handleGenerateOtp() {
+    try {
+      const response = await fetch("/api/auth/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cpf: cpf.replace(/\D/g, ""),
+          tipoUsuario: selectedRole.toUpperCase(),
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMensagem(`OTP gerado: ${data.otp}`); // Exibe o OTP para teste
+      } else {
+        setMensagem(data.error || "Erro ao gerar OTP");
+      }
+    } catch (error) {
+      setMensagem("Erro ao conectar ao servidor");
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     try {
@@ -40,10 +61,11 @@ const LoginForm = () => {
       });
       const data = await response.json();
       if (data.success) {
+        localStorage.setItem("token", data.token); // Armazena o token
         window.location.href =
           selectedRole === "CLIENTE" ? "/pages/cliente" : "/pages/funcionario";
       } else {
-        setMensagem(data.message || "Erro ao fazer login");
+        setMensagem(data.error || "Erro ao fazer login");
       }
     } catch (error) {
       setMensagem("Erro ao conectar ao servidor");
@@ -112,14 +134,23 @@ const LoginForm = () => {
         </label>
         <label className="flex flex-col gap-1">
           <span className="font-semibold">OTP:</span>
-          <input
-            type="text"
-            name="otp"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Digite o OTP fornecido..."
-            className="py-1.5 px-2 outline-none rounded-lg border border-transparent focus:border-black transition duration-300"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              name="otp"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Digite o OTP fornecido..."
+              className="py-1.5 px-2 outline-none rounded-lg border border-transparent focus:border-black transition duration-300 flex-1"
+            />
+            <button
+              type="button"
+              onClick={handleGenerateOtp}
+              className="bg-black text-white font-bold py-1.5 px-4 rounded-lg hover:bg-neutral-800 transition duration-500 cursor-pointer"
+            >
+              Gerar OTP
+            </button>
+          </div>
         </label>
 
         <input

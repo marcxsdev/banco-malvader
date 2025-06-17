@@ -1,108 +1,120 @@
 import { NextResponse } from "next/server";
-import pool from "../../../lib/util/db";
+import { query } from "@/lib/util/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 export async function POST(request) {
-  let connection;
   try {
-    connection = await pool.getConnection();
-
     const { cpf, senha, otp, tipoUsuario } = await request.json();
 
+    // Validação de campos obrigatórios
     if (!cpf || !senha || !otp || !tipoUsuario) {
-      await connection.query(
+      await query(
         "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
         [null, "LOGIN", "Falha: campos obrigatórios ausentes"]
       );
       return NextResponse.json(
-        { success: false, message: "Todos os campos são obrigatórios" },
+        { error: "Todos os campos são obrigatórios" },
         { status: 400 }
       );
     }
-    if (cpf.replace(/\D/g, "").length !== 11) {
-      await connection.query(
+
+    // Validação do CPF
+    const cpfLimpo = cpf.replace(/\D/g, "");
+    if (cpfLimpo.length !== 11) {
+      await query(
         "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
         [null, "LOGIN", `Falha: CPF inválido (${cpf})`]
       );
+      return NextResponse.json({ error: "CPF inválido" }, { status: 400 });
+    }
+
+    // Validar senha forte usando a procedure
+    try {
+      await query("CALL validar_senha(?)", [senha]);
+    } catch (error) {
+      await query(
+        "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
+        [null, "LOGIN", "Falha: senha não atende aos requisitos"]
+      );
       return NextResponse.json(
-        { success: false, message: "CPF inválido" },
+        { error: "Senha não atende aos requisitos" },
         { status: 400 }
       );
     }
 
-    const [rows] = await connection.query(
+    // Buscar usuário
+    const users = await query(
       "SELECT * FROM usuario WHERE cpf = ? AND tipo_usuario = ?",
-      [cpf.replace(/\D/g, ""), tipoUsuario]
+      [cpfLimpo, tipoUsuario]
     );
 
-    if (rows.length === 0) {
-      await connection.query(
+    if (users.length === 0) {
+      await query(
         "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
         [null, "LOGIN", `Falha: usuário com CPF ${cpf} não encontrado`]
       );
       return NextResponse.json(
-        { success: false, message: "Usuário não encontrado" },
+        { error: "Usuário não encontrado" },
         { status: 401 }
       );
     }
 
-    const usuario = rows[0];
+    const usuario = users[0];
+
+    // Validar senha
     const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
     if (!senhaValida) {
-      await connection.query(
+      await query(
         "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
         [usuario.id_usuario, "LOGIN", "Falha: senha incorreta"]
       );
-      return NextResponse.json(
-        { success: false, message: "Senha incorreta" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Senha incorreta" }, { status: 401 });
     }
 
-    if (usuario.otp_ativo !== otp || usuario.otp_expiracao < new Date()) {
-      await connection.query(
+    // Validar OTP
+    if (
+      usuario.otp_ativo !== otp ||
+      new Date(usuario.otp_expiracao) < new Date()
+    ) {
+      await query(
         "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
         [usuario.id_usuario, "LOGIN", "Falha: OTP inválido ou expirado"]
       );
       return NextResponse.json(
-        { success: false, message: "OTP inválido ou expirado" },
+        { error: "OTP inválido ou expirado" },
         { status: 401 }
       );
     }
 
+    // Gerar token JWT
     const token = jwt.sign(
       { id_usuario: usuario.id_usuario, tipo_usuario: tipoUsuario },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    await connection.query(
+    // Registrar login bem-sucedido na auditoria
+    await query(
       "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
       [usuario.id_usuario, "LOGIN", "Sucesso"]
     );
 
-    return NextResponse.json(
-      { success: true, token },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    // Retornar resposta
+    return NextResponse.json({
+      success: true,
+      token,
+      user: { id: usuario.id_usuario, nome: usuario.nome, tipo: tipoUsuario },
+    });
   } catch (error) {
     console.error("Erro na API de autenticação:", error);
-    try {
-      if (connection) {
-        await connection.query(
-          "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
-          [null, "LOGIN", `Erro no servidor: ${error.message}`]
-        );
-      }
-    } catch (auditError) {
-      console.error("Erro ao registrar na auditoria:", auditError);
-    }
+    await query(
+      "INSERT INTO auditoria (id_usuario, acao, detalhes, data_hora) VALUES (?, ?, ?, NOW())",
+      [null, "LOGIN", `Erro no servidor: ${error.message}`]
+    );
     return NextResponse.json(
-      { success: false, message: "Erro ao conectar ao servidor" },
+      { error: "Erro ao conectar ao servidor" },
       { status: 500 }
     );
-  } finally {
-    if (connection) connection.release();
   }
 }

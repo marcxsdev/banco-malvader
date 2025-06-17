@@ -1,14 +1,47 @@
 "use client";
 import { FaUserCircle } from "react-icons/fa";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const AsideFuncionario = ({ activeTab, setActiveTab }) => {
+  const [cargo, setCargo] = useState("Carregando...");
+  const [isGerente, setIsGerente] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const funcionarioData = async () => {
+          const response = await fetch("/api/funcionario/perfil", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await response.json();
+          if (data.success) {
+            setCargo(data.cargo);
+            setIsGerente(data.cargo === "GERENTE");
+          } else {
+            setCargo("Funcionário");
+          }
+        };
+        funcionarioData();
+      } catch (error) {
+        setCargo("Funcionário");
+      }
+    } else {
+      setCargo("Funcionário");
+    }
+  }, []);
+
   const tabs = [
     { label: "Abrir Conta", key: "abrir" },
     { label: "Fechar Conta", key: "fechar" },
     { label: "Consultar Dados", key: "consultar" },
     { label: "Alterar Dados", key: "alterar" },
-    { label: "Cadastrar Funcionário", key: "funcionario" },
+    ...(isGerente
+      ? [{ label: "Cadastrar Funcionário", key: "funcionario" }]
+      : []),
     { label: "Relatórios", key: "relatorios" },
   ];
 
@@ -17,7 +50,7 @@ const AsideFuncionario = ({ activeTab, setActiveTab }) => {
       <div className="flex flex-col gap-6">
         <div className="flex flex-row items-center gap-2">
           <FaUserCircle size={28} />
-          <span className="text-lg font-medium">Gerente</span>
+          <span className="text-lg font-medium">{cargo}</span>
         </div>
         <div className="flex flex-col gap-2">
           {tabs.map((tab) => (
@@ -36,7 +69,6 @@ const AsideFuncionario = ({ activeTab, setActiveTab }) => {
           ))}
         </div>
       </div>
-
       <Image
         src="/assets/banco-malvader-logo.png"
         alt="Logo Banco Malvader"
