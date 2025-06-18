@@ -38,6 +38,17 @@ const ConsultaCliente = () => {
     }
   };
 
+  const formatarEndereco = (endereco) => {
+    if (!endereco || !endereco.local) {
+      return "Não informado";
+    }
+    const { local, numero_casa, bairro, cidade, estado, complemento, cep } =
+      endereco;
+    return `${local}, ${numero_casa}, ${bairro}, ${cidade} - ${estado}${
+      complemento ? `, ${complemento}` : ""
+    } (CEP: ${cep})`;
+  };
+
   return (
     <div>
       <form onSubmit={handleBuscar} className="flex gap-2 mb-6 max-w-[700px]">
@@ -73,12 +84,11 @@ const ConsultaCliente = () => {
             <strong>Telefone:</strong> {dados.telefone}
           </p>
           <p>
-            <strong>Endereço:</strong> {dados.endereco}
+            <strong>Endereço:</strong> {formatarEndereco(dados.endereco)}
           </p>
           <p>
             <strong>Score de Crédito:</strong> {dados.score}
           </p>
-
           <div>
             <p className="font-semibold">Contas:</p>
             <ul className="list-disc ml-4">

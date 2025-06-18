@@ -202,7 +202,7 @@ const AlterarCliente = () => {
               value={endereco.estado}
               onChange={(e) => handleEnderecoChange("estado", e.target.value)}
               className="w-full border rounded-lg py-1.5 px-2"
-              placeholder="Estado (ex.: SP)"
+              placeholder="Estado (ex.: DF)"
               maxLength={2}
             />
           </div>

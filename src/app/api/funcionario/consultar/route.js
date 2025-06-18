@@ -45,7 +45,7 @@ export async function POST(request) {
       }
 
       // Buscar dados da conta
-      const [conta] = await query(
+      const conta = await query(
         `SELECT 
           c.numero_conta,
           c.tipo_conta AS tipo,
@@ -62,7 +62,7 @@ export async function POST(request) {
         [numero_conta]
       );
 
-      if (!conta) {
+      if (!conta.length) {
         return NextResponse.json(
           { error: "Conta não encontrada" },
           { status: 404 }
@@ -84,7 +84,7 @@ export async function POST(request) {
 
       // Mockar projeção de rendimentos (procedure não existe)
       const rendimentoPrevisto = ["POUPANCA", "INVESTIMENTO"].includes(
-        conta.tipo
+        conta[0].tipo
       )
         ? 0
         : null;
@@ -92,12 +92,14 @@ export async function POST(request) {
       return NextResponse.json({
         success: true,
         data: {
-          tipo: conta.tipo,
-          nome: conta.nome,
-          cpf: conta.cpf,
-          saldo: parseFloat(conta.saldo || 0).toFixed(2), // Garantir número
-          limite: conta.limite ? parseFloat(conta.limite).toFixed(2) : "0.00",
-          vencimento: conta.data_vencimento || "N/A",
+          tipo: conta[0].tipo,
+          nome: conta[0].nome,
+          cpf: conta[0].cpf,
+          saldo: parseFloat(conta[0].saldo || 0).toFixed(2),
+          limite: conta[0].limite
+            ? parseFloat(conta[0].limite).toFixed(2)
+            : "0.00",
+          vencimento: conta[0].data_vencimento || "N/A",
           rendimentoPrevisto: rendimentoPrevisto
             ? rendimentoPrevisto.toFixed(2)
             : "N/A",
@@ -115,20 +117,27 @@ export async function POST(request) {
       }
 
       // Buscar dados do cliente
-      const [cliente] = await query(
+      const cliente = await query(
         `SELECT 
-      u.nome,
-      u.cpf,
-      DATE_FORMAT(u.data_nascimento, '%d/%m/%Y') AS nascimento,
-      u.telefone,
-      u.endereco
-    FROM cliente cl
-    JOIN usuario u ON cl.id_usuario = u.id_usuario
-    WHERE u.cpf = ?`,
+          u.nome,
+          u.cpf,
+          DATE_FORMAT(u.data_nascimento, '%d/%m/%Y') AS nascimento,
+          u.telefone,
+          e.cep,
+          e.local,
+          e.numero_casa,
+          e.bairro,
+          e.cidade,
+          e.estado,
+          e.complemento
+        FROM cliente cl
+        JOIN usuario u ON cl.id_usuario = u.id_usuario
+        LEFT JOIN endereco e ON u.id_usuario = e.id_usuario
+        WHERE u.cpf = ?`,
         [cpf.replace(/\D/g, "")]
       );
 
-      if (!cliente) {
+      if (!cliente.length) {
         return NextResponse.json(
           { error: "Cliente não encontrado" },
           { status: 404 }
@@ -138,35 +147,42 @@ export async function POST(request) {
       // Buscar contas do cliente
       const contas = await query(
         `SELECT 
-      numero_conta,
-      tipo_conta AS tipo,
-      status
-    FROM conta
-    WHERE id_cliente = (SELECT cl.id_cliente FROM cliente cl JOIN usuario u ON cl.id_usuario = u.id_usuario WHERE u.cpf = ?)`,
+          numero_conta,
+          tipo_conta AS tipo,
+          status
+        FROM conta
+        WHERE id_cliente = (SELECT cl.id_cliente FROM cliente cl JOIN usuario u ON cl.id_usuario = u.id_usuario WHERE u.cpf = ?)`,
         [cpf.replace(/\D/g, "")]
       );
 
       // Calcular score de crédito
       let score = 0;
       try {
-        const [scoreResult] = await query("CALL calcular_score_credito(?)", [
+        const scoreResult = await query("CALL calcular_score_credito(?)", [
           cpf.replace(/\D/g, ""),
         ]);
         score = scoreResult[0]?.score || 0;
       } catch (error) {
         console.error("Erro ao calcular score de crédito:", error);
-        // Retornar score 0 em caso de erro para não quebrar a consulta
         score = 0;
       }
 
       return NextResponse.json({
         success: true,
         data: {
-          nome: cliente.nome,
-          cpf: cliente.cpf,
-          nascimento: cliente.nascimento,
-          telefone: cliente.telefone,
-          endereco: cliente.endereco,
+          nome: cliente[0].nome,
+          cpf: cliente[0].cpf,
+          nascimento: cliente[0].nascimento,
+          telefone: cliente[0].telefone,
+          endereco: {
+            cep: cliente[0].cep,
+            local: cliente[0].local,
+            numero_casa: cliente[0].numero_casa,
+            bairro: cliente[0].bairro,
+            cidade: cliente[0].cidade,
+            estado: cliente[0].estado,
+            complemento: cliente[0].complemento,
+          },
           score: parseFloat(score).toFixed(2),
           contas,
         },
@@ -182,7 +198,7 @@ export async function POST(request) {
       }
 
       // Buscar dados do funcionário
-      const [funcionario] = await query(
+      const funcionario = await query(
         `SELECT 
           f.id_funcionario AS codigo,
           f.cargo,
@@ -190,18 +206,25 @@ export async function POST(request) {
           u.cpf,
           DATE_FORMAT(u.data_nascimento, '%d/%m/%Y') AS nascimento,
           u.telefone,
-          u.endereco,
+          e.cep,
+          e.local,
+          e.numero_casa,
+          e.bairro,
+          e.cidade,
+          e.estado,
+          e.complemento,
           (SELECT COUNT(*) FROM conta WHERE id_funcionario_abertura = f.id_funcionario) AS contas_abertas,
           (SELECT COALESCE(AVG(t.valor), 0) FROM transacao t 
            JOIN conta c ON t.id_conta_origem = c.id_conta 
            WHERE c.id_funcionario_abertura = f.id_funcionario) AS desempenho
         FROM funcionario f
         JOIN usuario u ON f.id_usuario = u.id_usuario
+        LEFT JOIN endereco e ON u.id_usuario = e.id_usuario
         WHERE u.cpf = ?`,
         [cpf.replace(/\D/g, "")]
       );
 
-      if (!funcionario) {
+      if (!funcionario.length) {
         return NextResponse.json(
           { error: "Funcionário não encontrado" },
           { status: 404 }
@@ -211,15 +234,23 @@ export async function POST(request) {
       return NextResponse.json({
         success: true,
         data: {
-          codigo: funcionario.codigo,
-          cargo: funcionario.cargo,
-          nome: funcionario.nome,
-          cpf: funcionario.cpf,
-          nascimento: funcionario.nascimento,
-          telefone: funcionario.telefone,
-          endereco: funcionario.endereco,
-          contasAbertas: funcionario.contas_abertas,
-          desempenho: parseFloat(funcionario.desempenho || 0).toFixed(2),
+          codigo: funcionario[0].codigo,
+          cargo: funcionario[0].cargo,
+          nome: funcionario[0].nome,
+          cpf: funcionario[0].cpf,
+          nascimento: funcionario[0].nascimento,
+          telefone: funcionario[0].telefone,
+          endereco: {
+            cep: funcionario[0].cep,
+            local: funcionario[0].local,
+            numero_casa: funcionario[0].numero_casa,
+            bairro: funcionario[0].bairro,
+            cidade: funcionario[0].cidade,
+            estado: funcionario[0].estado,
+            complemento: funcionario[0].complemento,
+          },
+          contasAbertas: funcionario[0].contas_abertas,
+          desempenho: parseFloat(funcionario[0].desempenho || 0).toFixed(2),
         },
       });
     }

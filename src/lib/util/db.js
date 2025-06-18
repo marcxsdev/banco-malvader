@@ -20,4 +20,8 @@ async function query(sql, params) {
   }
 }
 
-module.exports = { pool, query };
+async function getConnection() {
+  return await pool.getConnection();
+}
+
+module.exports = { pool, query, getConnection };
