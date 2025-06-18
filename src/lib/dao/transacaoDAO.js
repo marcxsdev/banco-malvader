@@ -101,10 +101,49 @@ async function listarContas(id_cliente) {
   const contas = await query(
     `SELECT numero_conta, tipo_conta, saldo
      FROM conta
-     WHERE id_cliente = ? AND status = 'ATIVA'`,
+     WHERE id_cliente = ? AND status = 'ATIVA' AND tipo_conta = 'CORRENTE'`,
     [id_cliente]
   );
   return contas;
+}
+
+async function getLimiteEProjecao(id_usuario, numero_conta) {
+  // Buscar id_cliente
+  const clientes = await query(
+    "SELECT id_cliente, score_credito FROM cliente WHERE id_usuario = ?",
+    [id_usuario]
+  );
+  if (clientes.length === 0) return null;
+  const { id_cliente, score_credito } = clientes[0];
+
+  // Buscar conta e limite
+  const contas = await query(
+    `SELECT c.id_conta, c.numero_conta, COALESCE(cc.limite, 0) AS limite
+     FROM conta c
+     LEFT JOIN conta_corrente cc ON c.id_conta = cc.id_conta
+     WHERE c.numero_conta = ? AND c.id_cliente = ? AND c.status = 'ATIVA' AND c.tipo_conta = 'CORRENTE'`,
+    [numero_conta, id_cliente]
+  );
+  if (contas.length === 0) return null;
+
+  const { limite } = contas[0];
+  let projecao = limite;
+  let periodo_projecao = "sem aumento previsto";
+
+  // Calcular projeção com base no score de crédito
+  if (score_credito >= 700) {
+    projecao = limite * 1.2; // +20%
+    periodo_projecao = "em 3 meses";
+  } else if (score_credito >= 500) {
+    projecao = limite * 1.1; // +10%
+    periodo_projecao = "em 6 meses";
+  }
+
+  return {
+    limite: parseFloat(limite),
+    projecao: parseFloat(projecao.toFixed(2)),
+    periodo_projecao,
+  };
 }
 
 module.exports = {
@@ -115,4 +154,5 @@ module.exports = {
   getExtrato,
   checkSaldoLimite,
   listarContas,
+  getLimiteEProjecao,
 };
