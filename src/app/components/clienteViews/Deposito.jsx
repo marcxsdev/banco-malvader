@@ -1,11 +1,40 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Deposito = () => {
   const [valor, setValor] = useState("");
   const [numeroConta, setNumeroConta] = useState("");
+  const [contas, setContas] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    const fetchContas = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/buscar_conta", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Erro ao listar contas");
+        }
+
+        setContas(data.contas);
+        if (data.contas.length > 0) {
+          setNumeroConta(data.contas[0].numero_conta);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchContas();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +59,7 @@ const Deposito = () => {
 
       setSuccess(data.message);
       setValor("");
-      setNumeroConta("");
+      setNumeroConta(contas[0]?.numero_conta || "");
     } catch (err) {
       setError(err.message);
     }
@@ -52,15 +81,21 @@ const Deposito = () => {
         className="py-2 px-3 border rounded-lg no-spinner"
         required
       />
-      <input
-        type="text"
+      <select
         name="numero_conta"
-        placeholder="Número da Conta"
         value={numeroConta}
         onChange={(e) => setNumeroConta(e.target.value)}
         className="py-2 px-3 border rounded-lg"
         required
-      />
+      >
+        <option value="">Selecione uma conta</option>
+        {contas.map((conta) => (
+          <option key={conta.numero_conta} value={conta.numero_conta}>
+            {conta.numero_conta} ({conta.tipo_conta}, Saldo: R$
+            {conta.saldo})
+          </option>
+        ))}
+      </select>
       <button
         type="submit"
         className="bg-black text-white py-2.5 px-4 rounded-xl hover:bg-neutral-800 cursor-pointer"
