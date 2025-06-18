@@ -6,6 +6,7 @@ import Deposito from "@/app/components/clienteViews/Deposito";
 import Saque from "@/app/components/clienteViews/Saque";
 import Transferencia from "@/app/components/clienteViews/Transferencia";
 import ConsultarLimite from "@/app/components/clienteViews/ConsultarLimite";
+import Extrato from "@/app/components/clienteViews/Extrato";
 
 import { FaArrowRight } from "react-icons/fa";
 import { FaMoneyBillWave } from "react-icons/fa";
@@ -22,7 +23,10 @@ const Cliente = () => {
       <div className="mt-8 flex justify-center items-center bg-gray-100">
         <div className="w-[1100px] h-[780px] border border-gray-300 rounded-xl bg-white shadow-md">
           <div className="px-5 mt-1.5">
-            <button className="w-full py-4 flex items-center justify-between px-5 cursor-pointer border-b ">
+            <button
+              onClick={() => setFormularioAtivo("extrato")}
+              className="w-full py-4 flex items-center justify-between px-5 cursor-pointer border-b "
+            >
               <span className="text-xl font-bold">Extrato</span>
               <FaArrowRight size={20} />
             </button>
@@ -74,6 +78,7 @@ const Cliente = () => {
             {formularioAtivo === "saque" && <Saque />}
             {formularioAtivo === "transferencia" && <Transferencia />}
             {formularioAtivo === "limite" && <ConsultarLimite />}
+            {formularioAtivo === "extrato" && <Extrato />}
           </div>
         </div>
       </div>
