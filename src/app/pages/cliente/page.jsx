@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import HeaderCliente from "@/app/components/HeaderCliente";
 import Deposito from "@/app/components/clienteViews/Deposito";
@@ -16,6 +16,41 @@ import { FaChartLine } from "react-icons/fa";
 
 const Cliente = () => {
   const [formularioAtivo, setFormularioAtivo] = useState(null);
+  const [contas, setContas] = useState([]);
+  const [contaSelecionada, setContaSelecionada] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchContas = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/buscar_conta", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Erro ao listar contas");
+        }
+
+        setContas(data.contas);
+        if (data.contas.length > 0) {
+          setContaSelecionada(data.contas[0].numero_conta);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchContas();
+  }, []);
+
+  // Obter o saldo da conta selecionada
+  const saldoAtual =
+    contas.find((conta) => conta.numero_conta === contaSelecionada)?.saldo || 0;
 
   return (
     <div>
@@ -35,7 +70,21 @@ const Cliente = () => {
           <div className="mx-5">
             <div className="mt-8">
               <p className="text-lg">Saldo em conta:</p>
-              <p className="text-4xl font-bold">R$ 24.000</p>
+              <p className="text-4xl font-bold">R${saldoAtual}</p>
+              {error && <p className="text-red-500">{error}</p>}
+              <select
+                value={contaSelecionada}
+                onChange={(e) => setContaSelecionada(e.target.value)}
+                className="mt-2 py-2 px-3 border rounded-lg w-64 cursor-pointer"
+              >
+                <option value="">Selecione uma conta</option>
+                {contas.map((conta) => (
+                  <option key={conta.numero_conta} value={conta.numero_conta}>
+                    {conta.numero_conta} ({conta.tipo_conta}, Saldo: R$
+                    {conta.saldo})
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex flex-row gap-2 mt-4">
