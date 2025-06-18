@@ -10,16 +10,33 @@ async function findContaByNumeroAndCliente(numero_conta, id_cliente) {
   return contas.length > 0 ? contas[0] : null;
 }
 
+async function findContaByNumero(numero_conta) {
+  const contas = await query(
+    `SELECT id_conta, numero_conta
+     FROM conta
+     WHERE numero_conta = ? AND status = 'ATIVA'`,
+    [numero_conta]
+  );
+  return contas.length > 0 ? contas[0] : null;
+}
+
 async function createTransacao({
   id_conta_origem,
+  id_conta_destino,
   tipo_transacao,
   valor,
   descricao,
 }) {
   const result = await query(
-    `INSERT INTO transacao (id_conta_origem, tipo_transacao, valor, descricao, data_hora)
-     VALUES (?, ?, ?, ?, NOW())`,
-    [id_conta_origem, tipo_transacao, valor, descricao]
+    `INSERT INTO transacao (id_conta_origem, id_conta_destino, tipo_transacao, valor, descricao, data_hora)
+     VALUES (?, ?, ?, ?, ?, NOW())`,
+    [
+      id_conta_origem,
+      id_conta_destino || null,
+      tipo_transacao,
+      valor,
+      descricao,
+    ]
   );
   return { insertId: result.insertId };
 }
@@ -92,6 +109,7 @@ async function listarContas(id_cliente) {
 
 module.exports = {
   findContaByNumeroAndCliente,
+  findContaByNumero,
   createTransacao,
   logAuditoria,
   getExtrato,
