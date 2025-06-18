@@ -4,10 +4,38 @@ import { useState } from "react";
 const ConsultaFuncionario = () => {
   const [cpf, setCpf] = useState("");
   const [dados, setDados] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleBuscar = (e) => {
+  const handleBuscar = async (e) => {
     e.preventDefault();
-    // chamda da API
+    setError(null);
+    setDados(null);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Você precisa estar autenticado.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/funcionario/consultar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tipo: "FUNCIONARIO", cpf }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setDados(data.data);
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      setError("Erro ao conectar com o servidor.");
+    }
   };
 
   return (
@@ -29,6 +57,7 @@ const ConsultaFuncionario = () => {
         </button>
       </form>
 
+      {error && <p className="text-red-600 mb-4">{error}</p>}
       {dados && (
         <div className="space-y-2 text-sm">
           <p>
@@ -53,7 +82,7 @@ const ConsultaFuncionario = () => {
             <strong>Contas abertas:</strong> {dados.contasAbertas}
           </p>
           <p>
-            <strong>Desempenho:</strong> {dados.desempenho}
+            <strong>Desempenho:</strong> R$ {dados.desempenho}
           </p>
         </div>
       )}

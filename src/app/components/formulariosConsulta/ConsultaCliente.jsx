@@ -4,10 +4,38 @@ import { useState } from "react";
 const ConsultaCliente = () => {
   const [cpf, setCpf] = useState("");
   const [dados, setDados] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleBuscar = (e) => {
+  const handleBuscar = async (e) => {
     e.preventDefault();
-    // chamada da API
+    setError(null);
+    setDados(null);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Você precisa estar autenticado.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/funcionario/consultar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tipo: "CLIENTE", cpf }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setDados(data.data);
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      setError("Erro ao conectar com o servidor.");
+    }
   };
 
   return (
@@ -29,6 +57,7 @@ const ConsultaCliente = () => {
         </button>
       </form>
 
+      {error && <p className="text-red-600 mb-4">{error}</p>}
       {dados && (
         <div className="space-y-2 text-sm">
           <p>

@@ -23,6 +23,19 @@ export async function POST(request) {
       );
     }
 
+    // Obter id_funcionario do funcionário autenticado
+    const [funcionario] = await query(
+      "SELECT id_funcionario FROM funcionario WHERE id_usuario = ?",
+      [decoded.id_usuario]
+    );
+    if (!funcionario) {
+      return NextResponse.json(
+        { error: "Funcionário não encontrado" },
+        { status: 404 }
+      );
+    }
+    const id_funcionario = funcionario.id_funcionario;
+
     // Obter dados do formulário
     const body = await request.json();
     console.log("Dados recebidos:", body);
@@ -170,13 +183,14 @@ export async function POST(request) {
 
     // Criar conta na tabela conta
     const insertContaQuery =
-      "INSERT INTO conta (id_cliente, id_agencia, numero_conta, saldo, tipo_conta) VALUES (?, ?, ?, ?, ?)";
+      "INSERT INTO conta (id_cliente, id_agencia, numero_conta, saldo, tipo_conta, id_funcionario_abertura) VALUES (?, ?, ?, ?, ?, ?)";
     const contaParams = [
       id_cliente,
       agenciaExistente[0].id_agencia,
       numero_conta,
       0.0,
       tipo_conta,
+      id_funcionario,
     ];
     await query(insertContaQuery, contaParams);
     const id_conta = (await query("SELECT LAST_INSERT_ID() AS id"))[0].id;
